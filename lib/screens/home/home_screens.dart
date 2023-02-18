@@ -12,6 +12,8 @@ class HomeScreens extends StatefulWidget {
 }
 
 class _HomeScreensState extends State<HomeScreens> {
+  late Database database;
+
   @override
   void initState() {
     super.initState();
@@ -39,8 +41,10 @@ class _HomeScreensState extends State<HomeScreens> {
       ),
       body: screens[currentindex],
       floatingActionButton: FloatingActionButton(
-        child:const Icon(Icons.add),
-        onPressed: () {},
+        child: const Icon(Icons.add),
+        onPressed: () {
+          getAllRecords();
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentindex,
@@ -69,7 +73,7 @@ class _HomeScreensState extends State<HomeScreens> {
   }
 
   void createDatabase() async {
-    var database = await openDatabase(
+    database = await openDatabase(
       'todo.db',
       version: 1,
       onCreate: (db, version) async {
@@ -82,5 +86,45 @@ class _HomeScreensState extends State<HomeScreens> {
         print('db opened');
       },
     );
+  }
+
+  void insertIntoDatabase() async {
+    await database.transaction((txn) async {
+      int id1 = await txn.rawInsert(
+          'INSERT INTO Tasks(name, date, time, status) VALUES("some name", "1234", "456", "on")');
+      print('inserted1: $id1');
+      int id2 = await txn.rawInsert(
+          'INSERT INTO Tasks(name, date, time, status) VALUES(?, ?, ?, ?)',
+          ['another name', "12034", "4556", "off"]);
+      print('inserted2: $id2');
+    });
+  }
+
+  void getAllRecords() async {
+    List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
+    List<Map> expectedList = [
+      {
+        'name': 'some name',
+        'id': 1,
+        'date': "1234",
+        'time': "456",
+        'status': "on"
+      },
+      {
+        'name': 'another name',
+        'id': 2,
+        'date': "12034",
+        'time': "4556",
+        'status': "off"
+      }
+    ];
+    print(list);
+    print(expectedList);
+  }
+
+  void deleteRecord() async {
+    int count = await database
+        .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
+    assert(count == 1);
   }
 }
