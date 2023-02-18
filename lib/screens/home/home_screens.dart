@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:to_do/screens/nav_screens/archived_tasks.dart';
 import 'package:to_do/screens/nav_screens/done_tasks.dart';
 import 'package:to_do/screens/nav_screens/new_tasks.dart';
@@ -11,6 +12,12 @@ class HomeScreens extends StatefulWidget {
 }
 
 class _HomeScreensState extends State<HomeScreens> {
+  @override
+  void initState() {
+    super.initState();
+    createDatabase();
+  }
+
   int currentindex = 0;
   List<Widget> screens = [
     const NewTasksScreen(),
@@ -31,6 +38,10 @@ class _HomeScreensState extends State<HomeScreens> {
         centerTitle: true,
       ),
       body: screens[currentindex],
+      floatingActionButton: FloatingActionButton(
+        child:const Icon(Icons.add),
+        onPressed: () {},
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentindex,
         type: BottomNavigationBarType.fixed,
@@ -54,6 +65,22 @@ class _HomeScreensState extends State<HomeScreens> {
           ),
         ],
       ),
+    );
+  }
+
+  void createDatabase() async {
+    var database = await openDatabase(
+      'todo.db',
+      version: 1,
+      onCreate: (db, version) async {
+        print('db created');
+        await db.execute(
+            'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
+        print('table created');
+      },
+      onOpen: (db) {
+        print('db opened');
+      },
     );
   }
 }
