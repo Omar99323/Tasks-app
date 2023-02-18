@@ -15,7 +15,7 @@ class CustomFormField extends StatelessWidget {
   final String label;
   final IconData icon;
   final TextInputType type;
-  final String Function(String?) validator;
+  final String? Function(String?)? validator;
   final void Function(String) onsubmit;
   final void Function()? ontap;
 
