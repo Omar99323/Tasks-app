@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:to_do/screens/nav_screens/archived_tasks.dart';
 import 'package:to_do/screens/nav_screens/done_tasks.dart';
 import 'package:to_do/screens/nav_screens/new_tasks.dart';
+import 'package:to_do/widgets/custom_form_field.dart';
 
 class HomeScreens extends StatefulWidget {
   const HomeScreens({super.key});
@@ -32,18 +33,39 @@ class _HomeScreensState extends State<HomeScreens> {
     'Archived Tasks',
   ];
 
+  TextEditingController nameconroller = TextEditingController();
+  TextEditingController dateconroller = TextEditingController();
+  TextEditingController timeconroller = TextEditingController();
+  TextEditingController statusconroller = TextEditingController();
+  var scaffoldkey = GlobalKey<ScaffoldState>();
+  bool isopened = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldkey,
       appBar: AppBar(
         title: Text(titles[currentindex]),
         centerTitle: true,
       ),
       body: screens[currentindex],
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        child: isopened ? const Icon(Icons.add) : const Icon(Icons.edit),
         onPressed: () {
-          getAllRecords();
+          if (isopened) {
+            Navigator.pop(context);
+            isopened = false;
+          } else {
+            scaffoldkey.currentState!
+                .showBottomSheet((context) => CustomBottomSheet(
+                      nameconroller: nameconroller,
+                      dateconroller: dateconroller,
+                      statusconroller: statusconroller,
+                      timeconroller: timeconroller,
+                    ));
+            isopened = true;
+          }
+          setState(() {});
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -126,5 +148,94 @@ class _HomeScreensState extends State<HomeScreens> {
     int count = await database
         .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
     assert(count == 1);
+  }
+}
+
+class CustomBottomSheet extends StatelessWidget {
+  const CustomBottomSheet({
+    super.key,
+    required this.nameconroller,
+    required this.dateconroller,
+    required this.timeconroller,
+    required this.statusconroller,
+  });
+
+  final TextEditingController nameconroller;
+  final TextEditingController dateconroller;
+  final TextEditingController timeconroller;
+  final TextEditingController statusconroller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey[100],
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomFormField(
+            controler: nameconroller,
+            icon: Icons.title,
+            label: 'Task Title',
+            type: TextInputType.text,
+            validator: (p0) {
+              if (p0!.isEmpty) {
+                return 'Empty Title Field';
+              }
+              return 'Good';
+            },
+            onsubmit: (data) {},
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          CustomFormField(
+            controler: dateconroller,
+            icon: Icons.date_range,
+            label: 'Task Date',
+            type: TextInputType.datetime,
+            validator: (p0) {
+              if (p0!.isEmpty) {
+                return 'Empty Date Field';
+              }
+              return 'Good';
+            },
+            onsubmit: (data) {},
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          CustomFormField(
+            controler: timeconroller,
+            icon: Icons.punch_clock,
+            label: 'Task Time',
+            type: TextInputType.number,
+            validator: (p0) {
+              if (p0!.isEmpty) {
+                return 'Empty Time Field';
+              }
+              return 'Good';
+            },
+            onsubmit: (data) {},
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          CustomFormField(
+            controler: statusconroller,
+            icon: Icons.star_outline_sharp,
+            label: 'Task Status',
+            type: TextInputType.text,
+            validator: (p0) {
+              if (p0!.isEmpty) {
+                return 'Empty Field';
+              }
+              return 'Good';
+            },
+            onsubmit: (data) {},
+          ),
+        ],
+      ),
+    );
   }
 }
