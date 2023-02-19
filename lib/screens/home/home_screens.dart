@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:to_do/models/task_model.dart';
 import 'package:to_do/screens/nav_screens/archived_tasks.dart';
 import 'package:to_do/screens/nav_screens/done_tasks.dart';
 import 'package:to_do/screens/nav_screens/new_tasks.dart';
 import 'package:to_do/widgets/custom_form_field.dart';
+
+List<Task> tsks = [];
 
 class HomeScreens extends StatefulWidget {
   const HomeScreens({super.key});
@@ -19,7 +23,11 @@ class _HomeScreensState extends State<HomeScreens> {
   @override
   void initState() {
     super.initState();
-    createDatabase();
+    createDatabase().then((value) => getAllRecords().then((value) {
+          setState(() {
+            tsks = value;
+          });
+        }));
   }
 
   int currentindex = 0;
@@ -50,7 +58,9 @@ class _HomeScreensState extends State<HomeScreens> {
         title: Text(titles[currentindex]),
         centerTitle: true,
       ),
-      body: screens[currentindex],
+      body: tsks.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : screens[currentindex],
       floatingActionButton: FloatingActionButton(
         child: isopened ? const Icon(Icons.add) : const Icon(Icons.edit),
         onPressed: () {
@@ -59,8 +69,16 @@ class _HomeScreensState extends State<HomeScreens> {
               insertIntoDatabase(nameconroller.text, dateconroller.text,
                       timeconroller.text)
                   .then((value) {
-                Navigator.pop(context);
-                isopened = false;
+                setState(() {
+                  nameconroller.clear();
+                  dateconroller.clear();
+                  timeconroller.clear();
+                  getAllRecords().then((value) {
+                    tsks = value;
+                  });
+                  Navigator.pop(context);
+                  isopened = false;
+                });
               });
             }
           } else {
@@ -70,10 +88,17 @@ class _HomeScreensState extends State<HomeScreens> {
                       dateconroller: dateconroller,
                       timeconroller: timeconroller,
                       formkey: formkey,
-                    ));
-            isopened = true;
+                    ))
+                .closed
+                .then((value) {
+              setState(() {
+                isopened = false;
+              });
+            });
+            setState(() {
+              isopened = true;
+            });
           }
-          setState(() {});
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -102,19 +127,17 @@ class _HomeScreensState extends State<HomeScreens> {
     );
   }
 
-  void createDatabase() async {
+  Future<void> createDatabase() async {
+    var databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'todo.db');
     database = await openDatabase(
-      'todo.db',
+      path,
       version: 1,
       onCreate: (db, version) async {
-        print('db created');
         await db.execute(
             'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
-        print('table created');
       },
-      onOpen: (db) {
-        print('db opened');
-      },
+      onOpen: (db) async {},
     );
   }
 
@@ -123,33 +146,20 @@ class _HomeScreensState extends State<HomeScreens> {
     String date,
     String time,
   ) async {
-    await database.transaction((txn)  async{
-       txn.rawInsert(
-          'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")')
-          .then((value) => print('$value inserted'));
+    await database.transaction((txn) async {
+      txn.rawInsert(
+          'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")');
     });
   }
 
-  void getAllRecords() async {
+  Future<List<Task>> getAllRecords() async {
     List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
-    List<Map> expectedList = [
-      {
-        'name': 'some name',
-        'id': 1,
-        'date': "1234",
-        'time': "456",
-        'status': "on"
-      },
-      {
-        'name': 'another name',
-        'id': 2,
-        'date': "12034",
-        'time': "4556",
-        'status': "off"
-      }
-    ];
-    print(list);
-    print(expectedList);
+
+    List<Task> tasks = [];
+    for (var i = 0; i < list.length; i++) {
+      tasks.add(Task.fromdb(list[i]));
+    }
+    return tasks;
   }
 
   void deleteRecord() async {

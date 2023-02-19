@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home/home_screens.dart';
 
-void main() {
+void main()  {
   runApp(const ToDoApp());
 }
 
