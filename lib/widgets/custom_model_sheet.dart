@@ -37,7 +37,6 @@ class CustomBottomSheet extends StatelessWidget {
                   return 'Empty Title Field';
                 }
               },
-              onsubmit: (data) {},
             ),
             const SizedBox(
               height: 10,
@@ -52,7 +51,6 @@ class CustomBottomSheet extends StatelessWidget {
                   return 'Empty Date Field';
                 }
               },
-              onsubmit: (data) {},
               ontap: () {
                 final f = DateFormat('yyyy-MM-dd');
                 showDatePicker(
@@ -61,7 +59,7 @@ class CustomBottomSheet extends StatelessWidget {
                   firstDate: DateTime.now(),
                   lastDate: DateTime.parse('2035-12-30'),
                 ).then((value) => dateconroller.text = f.format(value!));
-              },
+              }, 
             ),
             const SizedBox(
               height: 10,
@@ -76,7 +74,7 @@ class CustomBottomSheet extends StatelessWidget {
                   return 'Empty Time Field';
                 }
               },
-              onsubmit: (data) {},
+              
               ontap: () {
                 showTimePicker(
                   context: context,

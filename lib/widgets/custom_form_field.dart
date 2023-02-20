@@ -8,7 +8,7 @@ class CustomFormField extends StatelessWidget {
       required this.icon,
       required this.type,
       required this.validator,
-      required this.onsubmit,
+       this.onsubmit,
       this.ontap});
 
   final TextEditingController controler;
@@ -16,7 +16,7 @@ class CustomFormField extends StatelessWidget {
   final IconData icon;
   final TextInputType type;
   final String? Function(String?)? validator;
-  final void Function(String) onsubmit;
+  final void Function(String)? onsubmit;
   final void Function()? ontap;
 
   @override

@@ -5,9 +5,8 @@ import 'package:to_do/models/task_model.dart';
 import 'package:to_do/screens/nav_screens/archived_tasks.dart';
 import 'package:to_do/screens/nav_screens/done_tasks.dart';
 import 'package:to_do/screens/nav_screens/new_tasks.dart';
+import '../../helpers/constants.dart';
 import '../../widgets/custom_model_sheet.dart';
-
-List<Task> tsks = [];
 
 class HomeScreens extends StatefulWidget {
   const HomeScreens({super.key});
@@ -61,7 +60,9 @@ class _HomeScreensState extends State<HomeScreens> {
           ? const Center(child: CircularProgressIndicator())
           : screens[currentindex],
       floatingActionButton: FloatingActionButton(
-        child: isopened ? const Icon(Icons.add) : const Icon(Icons.edit),
+        child: isopened
+            ? const Icon(Icons.add)
+            : const Icon(Icons.add_task_outlined),
         onPressed: () {
           if (isopened) {
             if (formkey.currentState!.validate()) {
@@ -136,7 +137,7 @@ class _HomeScreensState extends State<HomeScreens> {
         await db.execute(
             'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
       },
-      onOpen: (db) async {},
+      onOpen: (db) {},
     );
   }
 
