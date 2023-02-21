@@ -28,51 +28,59 @@ class HomepageCubit extends Cubit<HomepageState> {
 
   void getCurrentIndex(int index) {
     currentindex = index;
-    emit(HomepageNavBarState());
+    if (index == 0) {
+      emit(GetAllRecordsSuccess());
+    } else {
+      emit(HomepageNavBarState());
+    }
   }
 
-  Future<void> createDatabase() async {
-    var databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'todo.db');
-    database = await openDatabase(
-      path,
+  void createDatabase() {
+    Database database;
+
+    openDatabase(
+      'todo.db',
       version: 1,
       onCreate: (db, version) async {
         await db.execute(
             'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
       },
-      onOpen: (db) {},
-    );
+      onOpen: (db) {
+        getAllRecords(db);
+      },
+    ).then((value) {
+      database = value;
+    });
     emit(CreateDatabaseState());
   }
 
-  Future insertIntoDatabase(
-    String title,
-    String date,
-    String time,
-  ) async {
-    await database.transaction((txn) async {
-      txn.rawInsert(
-          'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")');
-    });
+  // Future insertIntoDatabase(
+  //   String title,
+  //   String date,
+  //   String time,
+  // ) async {
+  //   await database.transaction((txn) async {
+  //     txn.rawInsert(
+  //         'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")');
+  //   });
 
-    emit(InsertIntoDatabaseState());
-  }
+  //   emit(InsertIntoDatabaseState());
+  // }
 
-  Future<List<Task>> getAllRecords() async {
+  Future<void> getAllRecords(Database database) async {
     emit(GetAllRecordsLoading());
     List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
-
+    // List<Task> tasks = [];
     for (var i = 0; i < list.length; i++) {
       tsks.add(Task.fromdb(list[i]));
     }
     emit(GetAllRecordsSuccess());
-    return tsks;
+    // return tasks;
   }
 
-  void deleteRecord() async {
-    int count = await database
-        .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
-    assert(count == 1);
-  }
+  // Future<void> deleteRecord(String taskname) async {
+  //   await database.rawDelete('DELETE FROM Tasks WHERE name = ?', [taskname]);
+
+  //   emit(DeleteRecordState());
+  // }
 }

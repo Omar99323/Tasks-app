@@ -14,16 +14,6 @@ import '../../widgets/custom_model_sheet.dart';
 class HomeScreens extends StatelessWidget {
   HomeScreens({super.key});
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   createDatabase().then((value) => getAllRecords().then((value) {
-  //         setState(() {
-  //           tsks = value;
-  //         });
-  //       }));
-  // }
-
   TextEditingController nameconroller = TextEditingController();
   TextEditingController dateconroller = TextEditingController();
   TextEditingController timeconroller = TextEditingController();
@@ -37,8 +27,7 @@ class HomeScreens extends StatelessWidget {
     return BlocProvider(
         create: (context) => HomepageCubit()..createDatabase(),
         child: BlocConsumer<HomepageCubit, HomepageState>(
-          listener: (context, state) {
-          },
+          listener: (context, state) {},
           builder: (context, state) {
             var cubt = BlocProvider.of<HomepageCubit>(context);
             return Scaffold(
@@ -54,24 +43,23 @@ class HomeScreens extends StatelessWidget {
                   : cubt.screens[cubt.currentindex],
               floatingActionButton: FloatingActionButton(
                 child: isopened
-                    ? const Icon(Icons.add)
-                    : const Icon(Icons.add_task_outlined),
+                    ? const Icon(Icons.add_task_outlined)
+                    : const Icon(Icons.add),
                 onPressed: () {
                   if (isopened) {
                     if (formkey.currentState!.validate()) {
-                      cubt
-                          .insertIntoDatabase(nameconroller.text,
-                              dateconroller.text, timeconroller.text)
-                          .then((value) {
-                        nameconroller.clear();
-                        dateconroller.clear();
-                        timeconroller.clear();
-                        cubt.getAllRecords().then((value) {
-                          tsks = value;
-                        });
-                        Navigator.pop(context);
-                        isopened = false;
-                      });
+                      Navigator.pop(context);
+                      isopened = false;
+                      // cubt
+                      //     .insertIntoDatabase(nameconroller.text,
+                      //         dateconroller.text, timeconroller.text)
+                      //     .then((value) {
+                      //   nameconroller.clear();
+                      //   dateconroller.clear();
+                      //   timeconroller.clear();
+                      //   cubt.getAllRecords();
+                      //
+                      // });
                     }
                   } else {
                     scaffoldkey.currentState!
