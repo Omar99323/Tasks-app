@@ -15,3 +15,5 @@ class GetAllRecordsLoading extends HomepageState {}
 class GetAllRecordsSuccess extends HomepageState {}
 
 class DeleteRecordState extends HomepageState {}
+
+class UpdateRecordState extends HomepageState {}

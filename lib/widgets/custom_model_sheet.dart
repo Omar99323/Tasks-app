@@ -59,7 +59,7 @@ class CustomBottomSheet extends StatelessWidget {
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime.now(),
-                  lastDate: DateTime.parse('30-12-2035'),
+                  lastDate: DateTime.parse('2035-12-30'),
                 ).then((value) => dateconroller.text = f.format(value!));
               }, 
             ),

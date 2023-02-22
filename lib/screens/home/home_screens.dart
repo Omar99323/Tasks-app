@@ -12,7 +12,6 @@ class HomeScreens extends StatefulWidget {
 }
 
 class _HomeScreensState extends State<HomeScreens> {
-
   TextEditingController nameconroller = TextEditingController();
   TextEditingController dateconroller = TextEditingController();
   TextEditingController timeconroller = TextEditingController();
@@ -35,6 +34,7 @@ class _HomeScreensState extends State<HomeScreens> {
             return Scaffold(
               key: scaffoldkey,
               appBar: AppBar(
+                elevation: 0,
                 title: Text(cubt.titles[cubt.currentindex]),
                 centerTitle: true,
               ),
@@ -50,9 +50,9 @@ class _HomeScreensState extends State<HomeScreens> {
                     if (formkey.currentState!.validate()) {
                       cubt
                           .insertIntoDatabase(
-                        nameconroller.text,
-                        dateconroller.text,
-                        timeconroller.text,
+                        title: nameconroller.text,
+                        date: dateconroller.text,
+                        time: timeconroller.text,
                       )
                           .then((value) {
                         nameconroller.clear();
@@ -78,6 +78,7 @@ class _HomeScreensState extends State<HomeScreens> {
                 },
               ),
               bottomNavigationBar: BottomNavigationBar(
+                elevation: 0,
                 currentIndex: cubt.currentindex,
                 type: BottomNavigationBarType.fixed,
                 onTap: (value) {

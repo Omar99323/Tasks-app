@@ -37,7 +37,6 @@ class HomepageCubit extends Cubit<HomepageState> {
   void getCurrentIndex(int index) {
     currentindex = index;
     emit(HomepageNavBarState());
-    
   }
 
   void createDatabase() {
@@ -60,7 +59,10 @@ class HomepageCubit extends Cubit<HomepageState> {
     emit(CreateDatabaseState());
   }
 
-  insertIntoDatabase(String title, String date, String time) async {
+  Future insertIntoDatabase(
+      {required String title,
+      required String date,
+      required String time}) async {
     await database.transaction((txn) async {
       txn
           .rawInsert(
@@ -85,10 +87,22 @@ class HomepageCubit extends Cubit<HomepageState> {
     return tasks;
   }
 
-  void deleteRecord(String taskname) {
-    database.rawDelete('DELETE FROM Tasks WHERE name = ?', [taskname]).then(
-        (value) {
+  Future deleteRecord(int id) {
+    return database
+        .rawDelete('DELETE FROM Tasks WHERE id = ?', [id]).then((value) {
       emit(DeleteRecordState());
+      getAllRecords(database).then((value) {
+        tsks = value;
+        emit(GetAllRecordsSuccess());
+      });
+    });
+  }
+
+  Future updateRecord({required String status, required int id}) {
+    return database.rawUpdate(
+        'UPDATE Tasks SET status = ? WHERE id = ?', [status, id]).then((value) {
+      emit(UpdateRecordState());
+      print(status);
       getAllRecords(database).then((value) {
         tsks = value;
         emit(GetAllRecordsSuccess());
