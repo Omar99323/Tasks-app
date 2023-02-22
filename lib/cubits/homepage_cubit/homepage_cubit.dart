@@ -1,8 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../../helpers/constants.dart';
 import '../../models/task_model.dart';
 import '../../screens/nav_screens/archived_tasks.dart';
 import '../../screens/nav_screens/done_tasks.dart';
@@ -11,6 +9,9 @@ import 'homepage_state.dart';
 
 class HomepageCubit extends Cubit<HomepageState> {
   HomepageCubit() : super(HomepageInitial());
+
+  List<Task> tsks = [];
+  late Database database;
 
   int currentindex = 0;
 
@@ -26,18 +27,20 @@ class HomepageCubit extends Cubit<HomepageState> {
     'Archived Tasks',
   ];
 
+  bool isopened = false;
+
+  void changeCondition({required bool sheetopen}) {
+    isopened = sheetopen;
+    emit(HomepageChangeConditionState());
+  }
+
   void getCurrentIndex(int index) {
     currentindex = index;
-    if (index == 0) {
-      emit(GetAllRecordsSuccess());
-    } else {
-      emit(HomepageNavBarState());
-    }
+    emit(HomepageNavBarState());
+    
   }
 
   void createDatabase() {
-    Database database;
-
     openDatabase(
       'todo.db',
       version: 1,
@@ -46,7 +49,10 @@ class HomepageCubit extends Cubit<HomepageState> {
             'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
       },
       onOpen: (db) {
-        getAllRecords(db);
+        getAllRecords(db).then((value) {
+          tsks = value;
+          emit(GetAllRecordsSuccess());
+        });
       },
     ).then((value) {
       database = value;
@@ -54,33 +60,39 @@ class HomepageCubit extends Cubit<HomepageState> {
     emit(CreateDatabaseState());
   }
 
-  // Future insertIntoDatabase(
-  //   String title,
-  //   String date,
-  //   String time,
-  // ) async {
-  //   await database.transaction((txn) async {
-  //     txn.rawInsert(
-  //         'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")');
-  //   });
-
-  //   emit(InsertIntoDatabaseState());
-  // }
-
-  Future<void> getAllRecords(Database database) async {
-    emit(GetAllRecordsLoading());
-    List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
-    // List<Task> tasks = [];
-    for (var i = 0; i < list.length; i++) {
-      tsks.add(Task.fromdb(list[i]));
-    }
-    emit(GetAllRecordsSuccess());
-    // return tasks;
+  insertIntoDatabase(String title, String date, String time) async {
+    await database.transaction((txn) async {
+      txn
+          .rawInsert(
+              'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")')
+          .then((value) {
+        emit(InsertIntoDatabaseState());
+        getAllRecords(database).then((value) {
+          tsks = value;
+          emit(GetAllRecordsSuccess());
+        });
+      });
+    });
   }
 
-  // Future<void> deleteRecord(String taskname) async {
-  //   await database.rawDelete('DELETE FROM Tasks WHERE name = ?', [taskname]);
+  Future<List<Task>> getAllRecords(Database database) async {
+    emit(GetAllRecordsLoading());
+    List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
+    List<Task> tasks = [];
+    for (var i = 0; i < list.length; i++) {
+      tasks.add(Task.fromdb(list[i]));
+    }
+    return tasks;
+  }
 
-  //   emit(DeleteRecordState());
-  // }
+  void deleteRecord(String taskname) {
+    database.rawDelete('DELETE FROM Tasks WHERE name = ?', [taskname]).then(
+        (value) {
+      emit(DeleteRecordState());
+      getAllRecords(database).then((value) {
+        tsks = value;
+        emit(GetAllRecordsSuccess());
+      });
+    });
+  }
 }

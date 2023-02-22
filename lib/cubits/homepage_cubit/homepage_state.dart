@@ -4,6 +4,8 @@ class HomepageInitial extends HomepageState {}
 
 class HomepageNavBarState extends HomepageState {}
 
+class HomepageChangeConditionState extends HomepageState {}
+
 class CreateDatabaseState extends HomepageState {}
 
 class InsertIntoDatabaseState extends HomepageState {}
