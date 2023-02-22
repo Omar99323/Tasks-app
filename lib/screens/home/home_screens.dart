@@ -31,9 +31,6 @@ class _HomeScreensState extends State<HomeScreens> {
           },
           builder: (context, state) {
             var cubt = BlocProvider.of<HomepageCubit>(context);
-            // print(cubt.newtsks.length);
-            // print(cubt.donetsks.length);
-            // print(cubt.archivedtsks.length);
             return Scaffold(
               key: scaffoldkey,
               appBar: AppBar(

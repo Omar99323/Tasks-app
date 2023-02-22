@@ -83,7 +83,7 @@ class HomepageCubit extends Cubit<HomepageState> {
 
     database.rawQuery('SELECT * FROM Tasks').then((value) {
     
-      value.forEach((element) {
+      for (var element in value) {
         if (element['status'] == 'New') {
           newtsks.add(Task.fromdb(element));
         } else if (element['status'] == 'Done') {
@@ -91,7 +91,7 @@ class HomepageCubit extends Cubit<HomepageState> {
         } else {
           archivedtsks.add(Task.fromdb(element));
         }
-      });
+      }
       emit(GetAllRecordsSuccess());
     });
   }
