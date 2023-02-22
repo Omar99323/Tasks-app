@@ -14,7 +14,7 @@ class NewTasksScreen extends StatelessWidget {
     var cubt = BlocProvider.of<HomepageCubit>(context);
     return BlocBuilder<HomepageCubit, HomepageState>(
       builder: (context, state) {
-        return CustomTaskView(cubt: cubt); 
+        return CustomTaskView(taks: cubt.newtsks,); 
       },
     );
   }

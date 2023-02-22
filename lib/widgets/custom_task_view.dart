@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:to_do/models/task_model.dart';
 import '../cubits/homepage_cubit/homepage_cubit.dart';
 
 class CustomTaskView extends StatelessWidget {
   const CustomTaskView({
     super.key,
-    required this.cubt,
+    required this.taks,
   });
 
-  final HomepageCubit cubt;
+  final List<Task> taks;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class CustomTaskView extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    child: Text(cubt.tsks[index].time),
+                    child: Text(taks[index].time),
                   ),
                   const SizedBox(
                     width: 10,
@@ -29,7 +30,9 @@ class CustomTaskView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          cubt.tsks[index].title,
+                          taks[index].title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -39,7 +42,7 @@ class CustomTaskView extends StatelessWidget {
                           height: 5,
                         ),
                         Text(
-                          cubt.tsks[index].date,
+                          taks[index].date,
                           style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
@@ -55,7 +58,7 @@ class CustomTaskView extends StatelessWidget {
                     onTap: () {
                       BlocProvider.of<HomepageCubit>(context).updateRecord(
                         status: 'Done',
-                        id: cubt.tsks[index].id,
+                        id: taks[index].id,
                       );
                     },
                     child: const Icon(
@@ -68,11 +71,10 @@ class CustomTaskView extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      print(cubt.tsks[index].status);
-                      // BlocProvider.of<HomepageCubit>(context).updateRecord(
-                      //   status: 'Archived',
-                      //   id: cubt.tsks[index].id,
-                      // );
+                      BlocProvider.of<HomepageCubit>(context).updateRecord(
+                        status: 'Archived',
+                        id: taks[index].id,
+                      );
                     },
                     child: const Icon(
                       Icons.archive_outlined,
@@ -84,7 +86,7 @@ class CustomTaskView extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       BlocProvider.of<HomepageCubit>(context)
-                          .deleteRecord(cubt.tsks[index].id);
+                          .deleteRecord(taks[index].id);
                     },
                     child: const Icon(
                       Icons.delete,
@@ -99,6 +101,6 @@ class CustomTaskView extends StatelessWidget {
               width: 10,
               color: const Color(0xFFE6E6E6),
             ),
-        itemCount: cubt.tsks.length);
+        itemCount: taks.length);
   }
 }

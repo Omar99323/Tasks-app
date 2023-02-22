@@ -10,7 +10,10 @@ import 'homepage_state.dart';
 class HomepageCubit extends Cubit<HomepageState> {
   HomepageCubit() : super(HomepageInitial());
 
-  List<Task> tsks = [];
+  List<Task> newtsks = [];
+  List<Task> donetsks = [];
+  List<Task> archivedtsks = [];
+
   late Database database;
 
   int currentindex = 0;
@@ -48,10 +51,7 @@ class HomepageCubit extends Cubit<HomepageState> {
             'CREATE TABLE Tasks (id INTEGER PRIMARY KEY, name TEXT, date TEXT, time TEXT,status TEXT)');
       },
       onOpen: (db) {
-        getAllRecords(db).then((value) {
-          tsks = value;
-          emit(GetAllRecordsSuccess());
-        });
+        getAllRecords(db);
       },
     ).then((value) {
       database = value;
@@ -68,45 +68,46 @@ class HomepageCubit extends Cubit<HomepageState> {
           .rawInsert(
               'INSERT INTO Tasks(name, date, time, status) VALUES("$title", "$date", "$time", "New")')
           .then((value) {
+        getAllRecords(database);
         emit(InsertIntoDatabaseState());
-        getAllRecords(database).then((value) {
-          tsks = value;
-          emit(GetAllRecordsSuccess());
-        });
       });
     });
   }
 
-  Future<List<Task>> getAllRecords(Database database) async {
+  void getAllRecords(Database database) {
+    newtsks.clear();
+    donetsks.clear();
+    archivedtsks.clear();
+
     emit(GetAllRecordsLoading());
-    List<Map> list = await database.rawQuery('SELECT * FROM Tasks');
-    List<Task> tasks = [];
-    for (var i = 0; i < list.length; i++) {
-      tasks.add(Task.fromdb(list[i]));
-    }
-    return tasks;
-  }
 
-  Future deleteRecord(int id) {
-    return database
-        .rawDelete('DELETE FROM Tasks WHERE id = ?', [id]).then((value) {
-      emit(DeleteRecordState());
-      getAllRecords(database).then((value) {
-        tsks = value;
-        emit(GetAllRecordsSuccess());
+    database.rawQuery('SELECT * FROM Tasks').then((value) {
+    
+      value.forEach((element) {
+        if (element['status'] == 'New') {
+          newtsks.add(Task.fromdb(element));
+        } else if (element['status'] == 'Done') {
+          donetsks.add(Task.fromdb(element));
+        } else {
+          archivedtsks.add(Task.fromdb(element));
+        }
       });
+      emit(GetAllRecordsSuccess());
     });
   }
 
-  Future updateRecord({required String status, required int id}) {
-    return database.rawUpdate(
+  void deleteRecord(int id) {
+    database.rawDelete('DELETE FROM Tasks WHERE id = ?', [id]).then((value) {
+      getAllRecords(database);
+      emit(DeleteRecordState());
+    });
+  }
+
+  void updateRecord({required String status, required int id}) {
+    database.rawUpdate(
         'UPDATE Tasks SET status = ? WHERE id = ?', [status, id]).then((value) {
+      getAllRecords(database);
       emit(UpdateRecordState());
-      print(status);
-      getAllRecords(database).then((value) {
-        tsks = value;
-        emit(GetAllRecordsSuccess());
-      });
     });
   }
 }
